@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { createRequire } from 'module';
 import { OpenAI } from 'openai';
-
 import * as pdfParseMod from 'pdf-parse';
 const pdfParse = (pdfParseMod as any).default || pdfParseMod;
 
@@ -22,13 +18,19 @@ export async function POST(req: NextRequest) {
         let detectedText = "";
 
         if (file.type === "application/pdf") {
-            const pdfData = await pdfParse(buffer);
-            detectedText = pdfData.text;
+            try {
+                const parseFn = (pdfParse as any).default || pdfParse;
+                const pdfData = await parseFn(buffer);
+                detectedText = pdfData.text;
+            } catch (pdfErr: any) {
+                console.error("PDF Parsing error:", pdfErr);
+                return NextResponse.json({ error: "Failed to read PDF text: " + pdfErr.message }, { status: 422 });
+            }
         }
 
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
         let messages: any[] = [];
-
+        
         const systemPrompt = `You are an expert accountant AI. 
 Your task is to analyze a bank statement and extract specific transactions.
 Create a list titled "${listName || 'Extracted Transactions'}".
@@ -98,7 +100,13 @@ IMPORTANT JSON SYNTAX:
             content = content.substring(firstBrace, lastBrace + 1);
         }
 
-        const parsed = JSON.parse(content);
+        let parsed;
+        try {
+             parsed = JSON.parse(content);
+        } catch (e) {
+            parsed = { listName: "Error parsing JSON", transactions: [] };
+            console.error(e, content);
+        }
         return NextResponse.json(parsed);
 
     } catch (error: any) {
