@@ -39,8 +39,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={cn(openSans.variable, playfairDisplay.variable, openSans.className, "bg-neutral-50 min-h-screen font-sans font-light")}>
+        <html lang="en" className={cn(openSans.variable, playfairDisplay.variable)}>
+            <body className="bg-neutral-50 min-h-screen font-sans font-light">
                 <Sidebar />
                 <main className="lg:pl-64 min-h-screen pt-20 lg:pt-0">
                     <div className="p-4 md:p-8 max-w-7xl mx-auto page-transition">
