@@ -4,7 +4,8 @@ import path from 'path';
 import { createRequire } from 'module';
 import { OpenAI } from 'openai';
 
-
+import * as pdfParseMod from 'pdf-parse';
+const pdfParse = (pdfParseMod as any).default || pdfParseMod;
 
 export async function POST(req: NextRequest) {
     try {
@@ -21,8 +22,6 @@ export async function POST(req: NextRequest) {
         let detectedText = "";
 
         if (file.type === "application/pdf") {
-            const require = createRequire(import.meta.url);
-            const pdfParse = require('pdf-parse');
             const pdfData = await pdfParse(buffer);
             detectedText = pdfData.text;
         }

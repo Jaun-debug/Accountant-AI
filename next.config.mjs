@@ -2,6 +2,7 @@
 import withPWA from 'next-pwa';
 
 const nextConfig = {
+    serverExternalPackages: ['pdf-parse', '@napi-rs/canvas'],
     ...withPWA({
         dest: 'public',
         register: true,
