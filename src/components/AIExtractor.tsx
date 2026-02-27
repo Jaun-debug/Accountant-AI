@@ -97,8 +97,10 @@ export default function AIExtractor() {
         document.body.removeChild(link);
     };
 
-    const formatAmount = (amount: number) => {
-        return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatAmount = (val: any) => {
+        const amount = typeof val === 'number' ? val : parseFloat(val);
+        if (isNaN(amount)) return "0.00";
+        return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true });
     };
 
     return (
@@ -238,11 +240,11 @@ export default function AIExtractor() {
                                 <div className="flex items-center gap-4">
                                     <span className={cn(
                                         "px-4 py-2 text-sm font-black rounded-xl",
-                                        extractionResults.transactions.reduce((s, t) => s + t.amount, 0) < 0
+                                        extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0
                                             ? "bg-red-50 text-red-600"
                                             : "bg-emerald-50 text-emerald-600"
                                     )}>
-                                        TOTAL: {extractionResults.transactions.reduce((s, t) => s + t.amount, 0) < 0 ? '-' : ''}N${formatAmount(Math.abs(extractionResults.transactions.reduce((s, t) => s + t.amount, 0)))}
+                                        TOTAL: {extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0 ? '-' : ''}N${formatAmount(Math.abs(extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0)))}
                                     </span>
                                     <span className="bg-neutral-100 text-neutral-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block">
                                         {extractionResults.transactions.length} Transactions
@@ -272,9 +274,9 @@ export default function AIExtractor() {
                                         <div className="flex items-center gap-4">
                                             <div className={cn(
                                                 "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
-                                                t.amount < 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
+                                                (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
                                             )}>
-                                                {t.amount < 0 ? <Filter className="w-6 h-6 rotate-180" /> : <ArrowRight className="w-6 h-6 -rotate-45" />}
+                                                {(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? <Filter className="w-6 h-6 rotate-180" /> : <ArrowRight className="w-6 h-6 -rotate-45" />}
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1.5">{t.date}</p>
@@ -283,9 +285,9 @@ export default function AIExtractor() {
                                         </div>
                                         <p className={cn(
                                             "text-lg font-black tabular-nums transition-transform group-hover:scale-110 origin-right",
-                                            t.amount < 0 ? "text-red-500" : "text-emerald-600"
+                                            (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? "text-red-500" : "text-emerald-600"
                                         )}>
-                                            {t.amount < 0 ? '-' : '+'}{formatAmount(Math.abs(t.amount))}
+                                            {(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? '-' : '+'}{formatAmount(Math.abs((typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any))))}
                                         </p>
                                     </div>
                                 ))
