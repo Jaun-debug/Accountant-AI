@@ -1,10 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Open_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ["latin"] });
+const openSans = Open_Sans({
+    subsets: ["latin"],
+    variable: "--font-open-sans"
+});
+
+const playfairDisplay = Playfair_Display({
+    subsets: ["latin"],
+    variable: "--font-playfair-display",
+    weight: ["400", "500", "600", "700"]
+});
 
 export const metadata: Metadata = {
     title: "Accountant.AI | Portable Ledger",
@@ -31,7 +40,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={cn(inter.className, "bg-neutral-50 min-h-screen")}>
+            <body className={cn(openSans.variable, playfairDisplay.variable, openSans.className, "bg-neutral-50 min-h-screen font-sans font-light")}>
                 <Sidebar />
                 <main className="lg:pl-64 min-h-screen pt-20 lg:pt-0">
                     <div className="p-4 md:p-8 max-w-7xl mx-auto page-transition">
