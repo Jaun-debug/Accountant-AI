@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Invalid path parameters" }, { status: 400 });
         }
 
-        const filePath = path.join(process.cwd(), 'storage', 'data', 'clients', safeClient, normalizedType, file);
+        const filePath = path.join((process.env.VERCEL ? '/tmp' : process.cwd()), 'storage', 'data', 'clients', safeClient, normalizedType, file);
 
         if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf8');

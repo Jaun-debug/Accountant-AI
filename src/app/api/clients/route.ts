@@ -4,7 +4,7 @@ import path from 'path';
 
 export async function GET() {
     try {
-        const clientsDir = path.join(process.cwd(), 'storage', 'data', 'clients');
+        const clientsDir = path.join((process.env.VERCEL ? '/tmp' : process.cwd()), 'storage', 'data', 'clients');
         if (!fs.existsSync(clientsDir)) {
             return NextResponse.json([]);
         }

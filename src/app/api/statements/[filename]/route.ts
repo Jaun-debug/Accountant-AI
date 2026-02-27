@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-const STATEMENTS_DIR = path.join(process.cwd(), 'storage', 'statements');
+const STATEMENTS_DIR = path.join((process.env.VERCEL ? '/tmp' : process.cwd()), 'storage', 'statements');
 
 export async function DELETE(
     req: NextRequest,

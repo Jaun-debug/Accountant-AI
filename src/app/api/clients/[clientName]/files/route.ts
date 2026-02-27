@@ -20,7 +20,7 @@ export async function DELETE(
         // Normalize type case
         const normalizedType = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
 
-        const filePath = path.join(process.cwd(), 'storage', 'data', 'clients', safeClientName, normalizedType, filename);
+        const filePath = path.join((process.env.VERCEL ? '/tmp' : process.cwd()), 'storage', 'data', 'clients', safeClientName, normalizedType, filename);
 
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);

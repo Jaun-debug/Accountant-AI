@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
         const safeListName = (listName || 'extraction').replace(/[^a-zA-Z0-9_\- ]/g, "").trim();
         const timestamp = Date.now();
 
-        const clientBaseDir = path.join(process.cwd(), 'storage', 'data', 'clients', safeClientName);
+        const clientBaseDir = path.join((process.env.VERCEL ? '/tmp' : process.cwd()), 'storage', 'data', 'clients', safeClientName);
         const debitDir = path.join(clientBaseDir, 'Debits');
         const creditDir = path.join(clientBaseDir, 'Credits');
 

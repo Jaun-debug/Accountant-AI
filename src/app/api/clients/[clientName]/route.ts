@@ -11,7 +11,7 @@ export async function DELETE(
         const safeClientName = clientName.replace(/[^a-zA-Z0-9_\- ]/g, "").trim();
         if (!safeClientName) return NextResponse.json({ error: "Invalid client name" }, { status: 400 });
 
-        const clientDir = path.join(process.cwd(), 'storage', 'data', 'clients', safeClientName);
+        const clientDir = path.join((process.env.VERCEL ? '/tmp' : process.cwd()), 'storage', 'data', 'clients', safeClientName);
 
         if (fs.existsSync(clientDir)) {
             fs.rmSync(clientDir, { recursive: true, force: true });

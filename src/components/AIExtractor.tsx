@@ -235,9 +235,19 @@ export default function AIExtractor() {
                                 {extractionResults?.listName || "Extraction Results"}
                             </h3>
                             {extractionResults && (
-                                <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
-                                    {extractionResults.transactions.length} Transactions
-                                </span>
+                                <div className="flex items-center gap-4">
+                                    <span className={cn(
+                                        "px-4 py-2 text-sm font-black rounded-xl",
+                                        extractionResults.transactions.reduce((s, t) => s + t.amount, 0) < 0
+                                            ? "bg-red-50 text-red-600"
+                                            : "bg-emerald-50 text-emerald-600"
+                                    )}>
+                                        TOTAL: {extractionResults.transactions.reduce((s, t) => s + t.amount, 0) < 0 ? '-' : ''}N${formatAmount(Math.abs(extractionResults.transactions.reduce((s, t) => s + t.amount, 0)))}
+                                    </span>
+                                    <span className="bg-neutral-100 text-neutral-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block">
+                                        {extractionResults.transactions.length} Transactions
+                                    </span>
+                                </div>
                             )}
                         </div>
 
