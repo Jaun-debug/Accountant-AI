@@ -108,13 +108,25 @@ export default function FinancialCalendar() {
                     </div>
 
                     {event && (
-                        <div className={`mt-2 p-2 rounded-lg text-xs font-medium border
+                        <div className={`mt-2 p-2 rounded-lg text-xs font-medium border relative group/event
                             ${event.type === 'alert' ? 'bg-red-50 text-red-700 border-red-100' :
                                 event.type === 'income' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                     'bg-neutral-100 text-neutral-700 border-neutral-200'}`}
                         >
                             <div className="truncate mb-1">{event.title}</div>
-                            <div className="font-bold">{event.amount}</div>
+                            <div className="font-bold flex items-center justify-between">
+                                <span>{event.amount}</span>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEvents(events.filter(ev => ev.id !== event.id));
+                                    }}
+                                    className="opacity-0 group-hover/event:opacity-100 p-1 text-red-500 hover:bg-red-100 rounded transition-all"
+                                    title="Delete Event"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
