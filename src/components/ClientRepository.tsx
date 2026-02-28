@@ -156,7 +156,9 @@ export default function ClientRepository() {
                                                     <span className="text-[10px] text-neutral-400 ml-6 truncate font-medium uppercase tracking-tight">{file.companies.join(', ')}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-bold text-red-600 tabular-nums">-{formatAmount(file.total)}</span>
+                                                    <span className="text-xs font-bold text-red-600 tabular-nums whitespace-nowrap">
+                                                        {formatAmount(file.total).startsWith('-') ? formatAmount(file.total) : `-${formatAmount(file.total)}`}
+                                                    </span>
                                                     <button
                                                         onClick={(e) => handleDeleteFile(e, client.name, 'Debits', file.name)}
                                                         aria-label={`Delete ${file.name}`}
@@ -202,7 +204,9 @@ export default function ClientRepository() {
                                                     <span className="text-[10px] text-neutral-400 ml-6 truncate font-medium uppercase tracking-tight">{file.companies.join(', ')}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-bold text-emerald-600 tabular-nums">+{formatAmount(file.total)}</span>
+                                                    <span className="text-xs font-bold text-emerald-600 tabular-nums whitespace-nowrap">
+                                                        {formatAmount(file.total).startsWith('-') ? formatAmount(file.total).replace('-', '+') : `+${formatAmount(file.total)}`}
+                                                    </span>
                                                     <button
                                                         onClick={(e) => handleDeleteFile(e, client.name, 'Credits', file.name)}
                                                         aria-label={`Delete ${file.name}`}
@@ -274,7 +278,7 @@ export default function ClientRepository() {
                                                         }
                                                     }
                                                     return (
-                                                        <td key={c} className="px-6 py-4 tabular-nums text-neutral-700">{displayValue}</td>
+                                                        <td key={c} className="px-6 py-4 tabular-nums text-neutral-700 whitespace-nowrap">{displayValue}</td>
                                                     );
                                                 })}
                                             </tr>
