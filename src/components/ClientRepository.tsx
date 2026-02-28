@@ -73,9 +73,11 @@ export default function ClientRepository() {
     };
 
     const formatAmount = (amount: string | number) => {
-        const num = typeof amount === 'string' ? parseFloat(amount.replace(/,/g, '')) : amount;
-        if (isNaN(num)) return "0.00";
-        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true });
+        const num = typeof amount === 'string' ? parseFloat(amount.replace(/[^0-9.-]/g, '')) : amount;
+        if (isNaN(num)) return "0,00";
+        const isNegative = num < 0;
+        const parts = Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true }).split('.');
+        return (isNegative ? '-' : '') + parts[0].replace(/,/g, ' ') + ',' + parts[1];
     };
 
     if (clients.length === 0) {
@@ -261,9 +263,20 @@ export default function ClientRepository() {
                                                     row.includes("TOTAL") ? "bg-emerald-50/50 font-bold text-emerald-900" : "hover:bg-neutral-50/50"
                                                 )}
                                             >
-                                                {row.map((cell: string, c: number) => (
-                                                    <td key={c} className="px-6 py-4 tabular-nums text-neutral-700">{cell?.replace(/"/g, '')}</td>
-                                                ))}
+                                                {row.map((cell: string, c: number) => {
+                                                    const header = viewingFile.data.headers[c]?.toUpperCase() || '';
+                                                    const isAmountCol = header.includes('AMOUNT');
+                                                    let displayValue = cell?.replace(/"/g, '');
+                                                    if (isAmountCol && displayValue) {
+                                                        const stripped = displayValue.replace(/[^0-9.-]/g, '');
+                                                        if (stripped && !isNaN(parseFloat(stripped))) {
+                                                            displayValue = formatAmount(stripped);
+                                                        }
+                                                    }
+                                                    return (
+                                                        <td key={c} className="px-6 py-4 tabular-nums text-neutral-700">{displayValue}</td>
+                                                    );
+                                                })}
                                             </tr>
                                         ))}
                                     </tbody>

@@ -1,13 +1,20 @@
-import { FileText } from 'lucide-react';
+import ClientRepository from '@/components/ClientRepository';
+import { Folder } from 'lucide-react';
 
 export default function ClientsPage() {
     return (
-        <div className="flex flex-col items-center justify-center h-[70vh] text-center">
-            <div className="w-20 h-20 bg-neutral-100 rounded-3xl flex items-center justify-center mb-6">
-                <FileText className="w-10 h-10 text-neutral-300" />
+        <div className="space-y-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h1 className="text-4xl lg:text-5xl font-serif text-neutral-900 tracking-tight flex items-center gap-4">
+                        <Folder className="w-10 h-10 text-emerald-600" />
+                        Client Directory
+                    </h1>
+                    <p className="text-neutral-500 font-light mt-2 tracking-wide">Manage your clients, view your segregated statements and data repositories.</p>
+                </div>
             </div>
-            <h1 className="text-2xl font-bold text-neutral-900">Client Directory</h1>
-            <p className="text-neutral-500 mt-2 max-w-sm">This module is currently being optimized for high-density mobile viewing. Check back soon.</p>
+
+            <ClientRepository />
         </div>
     );
 }

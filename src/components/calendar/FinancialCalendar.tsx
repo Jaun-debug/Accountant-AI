@@ -15,11 +15,11 @@ interface CalendarEvent {
 }
 
 const INITIAL_EVENTS: CalendarEvent[] = [
-    { id: 1, date: 15, title: 'Q1 VAT Tax Due', type: 'alert', amount: '$4,250.00' },
-    { id: 2, date: 18, title: 'Acme Corp Retainer', type: 'income', amount: '+$1,500.00' },
-    { id: 3, date: 22, title: 'AWS Cloud Hosting', type: 'expense', amount: '-$340.00' },
-    { id: 4, date: 28, title: 'Payroll Run', type: 'expense', amount: '-$12,400.00' },
-    { id: 5, date: 5, title: 'TechFlow Inv #004', type: 'income', amount: '+$8,200.00', nextMonth: true }
+    { id: 1, date: 15, title: 'Q1 VAT Tax Due', type: 'alert', amount: 'N$4 250,00' },
+    { id: 2, date: 18, title: 'Acme Corp Retainer', type: 'income', amount: '+N$1 500,00' },
+    { id: 3, date: 22, title: 'AWS Cloud Hosting', type: 'expense', amount: '-N$340,00' },
+    { id: 4, date: 28, title: 'Payroll Run', type: 'expense', amount: '-N$12 400,00' },
+    { id: 5, date: 5, title: 'TechFlow Inv #004', type: 'income', amount: '+N$8 200,00', nextMonth: true }
 ];
 
 export default function FinancialCalendar() {
@@ -43,12 +43,17 @@ export default function FinancialCalendar() {
         e.preventDefault();
         if (!newEventTitle || !newEventAmount) return;
 
+        const val = parseFloat(newEventAmount.replace(/[^0-9.-]/g, ''));
+        const numToFormat = isNaN(val) ? 0 : val;
+        const parts = Math.abs(numToFormat).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true }).split('.');
+        const amtStr = parts[0].replace(/,/g, ' ') + ',' + parts[1];
+
         const newEvent: CalendarEvent = {
             id: Date.now(),
             date: newEventDate,
             title: newEventTitle,
             type: newEventType,
-            amount: newEventType === 'income' ? `+$${newEventAmount}` : `-$${newEventAmount}`
+            amount: newEventType === 'income' ? `+N$${amtStr}` : (newEventType === 'alert' ? `N$${amtStr}` : `-N$${amtStr}`)
         };
 
         setEvents([...events, newEvent]);
@@ -143,7 +148,7 @@ export default function FinancialCalendar() {
                 <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-sm font-bold text-neutral-400 uppercase tracking-widest">Expected Income (Feb)</p>
-                        <p className="text-3xl font-black text-emerald-600 mt-1">+$18,500.00</p>
+                        <p className="text-3xl font-black text-emerald-600 mt-1">+N$18 500,00</p>
                     </div>
                     <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
                         <TrendingUp className="w-6 h-6" />
@@ -152,7 +157,7 @@ export default function FinancialCalendar() {
                 <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-sm font-bold text-neutral-400 uppercase tracking-widest">Planned Expenses</p>
-                        <p className="text-3xl font-black text-neutral-900 mt-1">-$8,240.00</p>
+                        <p className="text-3xl font-black text-neutral-900 mt-1">-N$8 240,00</p>
                     </div>
                     <div className="w-12 h-12 bg-neutral-50 rounded-2xl flex items-center justify-center text-neutral-600">
                         <CalendarIcon className="w-6 h-6" />

@@ -22,7 +22,8 @@ export default function AIExtractor() {
         extractionResults,
         setExtractionResults,
         isExtracting,
-        setIsExtracting
+        setIsExtracting,
+        setClients
     } = useAccountantStore();
 
     const [file, setFile] = useState<File | null>(null);
@@ -73,6 +74,12 @@ export default function AIExtractor() {
                 transactions: extractionResults.transactions,
                 transactionType
             });
+            try {
+                const refreshedClients = await api.fetchClients();
+                setClients(refreshedClients);
+            } catch (err) {
+                console.error("Failed to refresh clients list", err);
+            }
             alert(`Success: ${res.message}`);
         } catch (error) {
             alert("Failed to connect to server.");
@@ -98,9 +105,11 @@ export default function AIExtractor() {
     };
 
     const formatAmount = (val: any) => {
-        const amount = typeof val === 'number' ? val : parseFloat(val);
-        if (isNaN(amount)) return "0.00";
-        return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true });
+        const amount = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.-]/g, ''));
+        if (isNaN(amount)) return "0,00";
+        const isNegative = amount < 0;
+        const parts = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true }).split('.');
+        return (isNegative ? '-' : '') + parts[0].replace(/,/g, ' ') + ',' + parts[1];
     };
 
     return (

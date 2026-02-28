@@ -18,7 +18,9 @@ export default function DashboardOverview() {
     const { clients } = useAccountantStore();
 
     const formatAmount = (num: number) => {
-        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true });
+        const isNegative = num < 0;
+        const parts = Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true }).split('.');
+        return (isNegative ? '-' : '') + parts[0].replace(/,/g, ' ') + ',' + parts[1];
     };
 
     const dashboardStats = useMemo(() => {
@@ -28,11 +30,11 @@ export default function DashboardOverview() {
 
         clients.forEach(c => {
             c.credits?.forEach(f => {
-                globalRevenue += parseFloat(f.total.toString().replace(/,/g, '') || "0");
+                globalRevenue += parseFloat(f.total.toString().replace(/[^0-9.-]/g, '') || "0");
                 fileCount++;
             });
             c.debits?.forEach(f => {
-                globalExpenses += parseFloat(f.total.toString().replace(/,/g, '') || "0");
+                globalExpenses += parseFloat(f.total.toString().replace(/[^0-9.-]/g, '') || "0");
                 fileCount++;
             });
         });
