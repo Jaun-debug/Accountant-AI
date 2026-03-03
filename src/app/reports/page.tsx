@@ -1,6 +1,6 @@
-import ScenarioPlanner from '@/components/reports/ScenarioPlanner';
+import FinancialDashboard from '@/components/reports/FinancialDashboard';
 
 export default function ReportsPage() {
-    return <ScenarioPlanner />;
+    return <FinancialDashboard />;
 }
 

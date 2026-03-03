@@ -1,9 +1,20 @@
 import { create } from 'zustand';
 
+export interface Invoice {
+    id: string;
+    client: string;
+    amount: number;
+    status: 'Paid' | 'Pending' | 'Overdue' | 'Draft';
+    date: string;
+    dueDate: string;
+}
+
 interface Transaction {
     date: string;
     description: string;
     amount: number;
+    account?: string;
+    approved?: boolean;
 }
 
 interface ExtractionResults {
@@ -55,6 +66,12 @@ interface AccountantStore {
 
     expandedSections: Record<string, boolean>;
     toggleSection: (clientName: string, type: string) => void;
+
+    invoices: Invoice[];
+    setInvoices: (invoices: Invoice[]) => void;
+    addInvoice: (invoice: Invoice) => void;
+    updateInvoiceStatus: (id: string, status: Invoice['status']) => void;
+    deleteInvoice: (id: string) => void;
 }
 
 export const useAccountantStore = create<AccountantStore>((set) => ({
@@ -88,4 +105,18 @@ export const useAccountantStore = create<AccountantStore>((set) => ({
             }
         };
     }),
+
+    invoices: [
+        { id: 'INV-2026-001', client: 'Acme Corp', amount: 4500.00, status: 'Paid', date: 'Feb 12, 2026', dueDate: 'Feb 26, 2026' },
+        { id: 'INV-2026-002', client: 'TechFlow', amount: 8200.00, status: 'Pending', date: 'Feb 18, 2026', dueDate: 'Mar 04, 2026' },
+        { id: 'INV-2026-003', client: 'Global Dynamics', amount: 2100.00, status: 'Overdue', date: 'Jan 25, 2026', dueDate: 'Feb 08, 2026' },
+    ],
+    setInvoices: (invoices) => set({ invoices }),
+    addInvoice: (invoice) => set((state) => ({ invoices: [invoice, ...state.invoices] })),
+    updateInvoiceStatus: (id, status) => set((state) => ({
+        invoices: state.invoices.map(inv => inv.id === id ? { ...inv, status } : inv)
+    })),
+    deleteInvoice: (id) => set((state) => ({
+        invoices: state.invoices.filter(inv => inv.id !== id)
+    })),
 }));

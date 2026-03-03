@@ -11,7 +11,8 @@ import {
     FileText,
     Filter,
     ArrowRight,
-    Calculator
+    Calculator,
+    X
 } from 'lucide-react';
 import { useAccountantStore } from '@/store/useAccountantStore';
 import { api } from '@/lib/api';
@@ -33,6 +34,11 @@ export default function AIExtractor() {
     const [transactionType, setTransactionType] = useState('auto');
     const [savingText, setSavingText] = useState<string | null>(null);
 
+    // Xero-style reconciliation state
+    const [customAccounts, setCustomAccounts] = useState<string[]>(['General', 'Utilities', 'Travel', 'Meals']);
+    const [newAccountName, setNewAccountName] = useState('');
+    const [isAddingAccount, setIsAddingAccount] = useState<number | null>(null);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleExtract = async () => {
@@ -46,7 +52,16 @@ export default function AIExtractor() {
 
         try {
             const results = await api.analyzeStatement(file, keywords, listName);
-            setExtractionResults(results);
+            // Default xero-style behavior: transactions require approval and have default account
+            const moddedResults = {
+                ...results,
+                transactions: results.transactions.map((t: any) => ({
+                    ...t,
+                    approved: false,
+                    account: 'General'
+                }))
+            };
+            setExtractionResults(moddedResults);
         } catch (error: any) {
             alert(`Extraction failed: ${error.message}`);
         } finally {
@@ -65,13 +80,19 @@ export default function AIExtractor() {
             return;
         }
 
+        const approvedTransactions = extractionResults.transactions.filter(t => t.approved);
+        if (approvedTransactions.length === 0) {
+            alert("Please approve at least one transaction before saving.");
+            return;
+        }
+
         setSavingText('Separating & Saving...');
 
         try {
             const res = await api.saveTransactions({
                 clientName,
                 listName: listName || 'Extracted',
-                transactions: extractionResults.transactions,
+                transactions: approvedTransactions,
                 transactionType
             });
             try {
@@ -110,6 +131,30 @@ export default function AIExtractor() {
         const isNegative = amount < 0;
         const parts = Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true }).split('.');
         return (isNegative ? '-' : '') + parts[0].replace(/,/g, ' ') + ',' + parts[1];
+    };
+
+    const toggleApproval = (index: number) => {
+        if (!extractionResults) return;
+        const updated = [...extractionResults.transactions];
+        updated[index].approved = !updated[index].approved;
+        setExtractionResults({ ...extractionResults, transactions: updated });
+    };
+
+    const updateTransactionAccount = (index: number, account: string) => {
+        if (!extractionResults) return;
+        const updated = [...extractionResults.transactions];
+        updated[index].account = account;
+        setExtractionResults({ ...extractionResults, transactions: updated });
+    };
+
+    const handleAddNewAccount = (index: number) => {
+        if (!newAccountName) return;
+        if (!customAccounts.includes(newAccountName)) {
+            setCustomAccounts([...customAccounts, newAccountName]);
+        }
+        updateTransactionAccount(index, newAccountName);
+        setNewAccountName('');
+        setIsAddingAccount(null);
     };
 
     return (
@@ -279,25 +324,86 @@ export default function AIExtractor() {
                                 </div>
                             ) : (
                                 extractionResults?.transactions.map((t, idx) => (
-                                    <div key={idx} className="bg-white p-5 rounded-2xl border border-neutral-100 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
-                                        <div className="flex items-center gap-4">
+                                    <div key={idx} className={cn(
+                                        "bg-white p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all group hover:shadow-md",
+                                        t.approved ? "border-emerald-200 bg-emerald-50/10" : "border-neutral-100"
+                                    )}>
+                                        <div className="flex items-center gap-4 flex-1">
+                                            <button
+                                                onClick={() => toggleApproval(idx)}
+                                                className={cn(
+                                                    "w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer",
+                                                    t.approved ? "bg-emerald-500 border-emerald-500 text-white" : "border-neutral-300 bg-white hover:border-emerald-400"
+                                                )}
+                                                title={t.approved ? "Approved" : "Needs Approval"}
+                                            >
+                                                {t.approved && <CheckCircle className="w-4 h-4" />}
+                                            </button>
                                             <div className={cn(
-                                                "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
+                                                "w-12 h-12 rounded-xl flex items-center justify-center transition-colors flex-shrink-0",
                                                 (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
                                             )}>
                                                 {(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? <Filter className="w-6 h-6 rotate-180" /> : <ArrowRight className="w-6 h-6 -rotate-45" />}
                                             </div>
-                                            <div>
-                                                <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1.5">{t.date}</p>
-                                                <p className="text-sm font-bold text-neutral-800 truncate max-w-[300px]">{t.description}</p>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest leading-none mb-1.5">{t.date}</p>
+                                                <p className="text-sm font-bold text-neutral-800 truncate">{t.description}</p>
                                             </div>
                                         </div>
-                                        <p className={cn(
-                                            "text-lg font-black tabular-nums transition-transform group-hover:scale-110 origin-right",
-                                            (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? "text-red-500" : "text-emerald-600"
-                                        )}>
-                                            {(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? '-' : '+'}{formatAmount(Math.abs((typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any))))}
-                                        </p>
+
+                                        <div className="flex items-center gap-6 justify-between sm:justify-end w-full sm:w-auto pl-10 sm:pl-0">
+                                            <div className="relative">
+                                                {isAddingAccount === idx ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            autoFocus
+                                                            type="text"
+                                                            value={newAccountName}
+                                                            onChange={e => setNewAccountName(e.target.value)}
+                                                            onKeyDown={e => e.key === 'Enter' && handleAddNewAccount(idx)}
+                                                            placeholder="New Account"
+                                                            className="px-3 py-1.5 text-xs font-bold border-2 border-emerald-500 rounded-lg outline-none w-32"
+                                                        />
+                                                        <button onClick={() => handleAddNewAccount(idx)} title="Confirm New Account" className="text-emerald-600 hover:text-emerald-700">
+                                                            <CheckCircle className="w-4 h-4" />
+                                                        </button>
+                                                        <button onClick={() => setIsAddingAccount(null)} title="Cancel New Account" className="text-neutral-400 hover:text-red-500">
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <select
+                                                        title="Assign Account"
+                                                        value={t.account || 'General'}
+                                                        onChange={(e) => {
+                                                            if (e.target.value === '__ADD_NEW__') {
+                                                                setIsAddingAccount(idx);
+                                                            } else {
+                                                                updateTransactionAccount(idx, e.target.value);
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs font-bold text-neutral-600 outline-none focus:border-emerald-500 cursor-pointer hover:bg-neutral-100 transition-colors",
+                                                            t.approved && "opacity-60 cursor-not-allowed"
+                                                        )}
+                                                        disabled={t.approved}
+                                                    >
+                                                        {customAccounts.map(acc => (
+                                                            <option key={acc} value={acc}>{acc}</option>
+                                                        ))}
+                                                        <option value="__ADD_NEW__" className="font-bold text-emerald-600">+ Add New Account</option>
+                                                    </select>
+                                                )}
+                                            </div>
+
+                                            <p className={cn(
+                                                "text-lg font-black tabular-nums transition-transform sm:w-28 text-right",
+                                                (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? "text-red-500" : "text-emerald-600",
+                                                !t.approved && "opacity-50"
+                                            )}>
+                                                {(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? '-' : '+'}{formatAmount(Math.abs((typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any))))}
+                                            </p>
+                                        </div>
                                     </div>
                                 ))
                             )}
