@@ -3,14 +3,13 @@
 import React, { useState } from 'react';
 import { CreditCard, Plus, Download, Filter, MoreHorizontal, TrendingDown, X } from 'lucide-react';
 
-const mockExpenses = [
-    { id: 'EXP-001', vendor: 'AWS Cloud Services', category: 'Infrastructure', amount: '$340.00', date: 'Feb 22, 2026' },
-    { id: 'EXP-002', vendor: 'Google Workspace', category: 'Software', amount: '$54.00', date: 'Feb 20, 2026' },
-    { id: 'EXP-003', vendor: 'WeWork Office', category: 'Rent', amount: '$1,200.00', date: 'Feb 01, 2026' },
-];
+import { useAccountantStore } from '@/store/useAccountantStore';
 
 export default function ExpensesDashboard() {
-    const [expenses, setExpenses] = useState(mockExpenses);
+    const expenses = useAccountantStore(state => state.expenses);
+    const addExpense = useAccountantStore(state => state.addExpense);
+    const deleteExpense = useAccountantStore(state => state.deleteExpense);
+
     const [showModal, setShowModal] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -31,7 +30,7 @@ export default function ExpensesDashboard() {
             date: 'Feb 22, 2026'
         };
 
-        setExpenses([newExpense, ...expenses]);
+        addExpense(newExpense);
         setShowModal(false);
         setVendor('');
         setAmount('');
@@ -39,7 +38,7 @@ export default function ExpensesDashboard() {
     };
 
     const handleDelete = (id: string) => {
-        setExpenses(expenses.filter(exp => exp.id !== id));
+        deleteExpense(id);
         setActiveDropdown(null);
     };
 

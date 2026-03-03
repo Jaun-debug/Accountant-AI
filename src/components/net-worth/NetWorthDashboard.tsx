@@ -5,29 +5,25 @@ import { Wallet, Home, Car, Landmark, ArrowUpRight, ArrowDownRight, Plus, PieCha
 
 type ItemType = 'Asset' | 'Liability';
 
-interface FinancialItem {
-    id: number;
-    name: string;
-    category: string;
-    value: number;
-    icon: any;
-    color: string;
-}
+import { useAccountantStore, FinancialItem } from '@/store/useAccountantStore';
 
-const INITIAL_ASSETS: FinancialItem[] = [
-    { id: 1, name: 'Main Office Building', category: 'Property', value: 450000, icon: Home, color: 'blue' },
-    { id: 2, name: 'Company Vehicles (3)', category: 'Vehicle', value: 85000, icon: Car, color: 'emerald' },
-    { id: 3, name: 'Business Checking', category: 'Cash', value: 124500, icon: Landmark, color: 'purple' },
-];
-
-const INITIAL_LIABILITIES: FinancialItem[] = [
-    { id: 1, name: 'Office Mortgage', category: 'Loan', value: 280000, icon: Home, color: 'red' },
-    { id: 2, name: 'Equipment Lease', category: 'Lease', value: 15400, icon: PieChart, color: 'red' },
-];
+const getIconForComponent = (iconName: string) => {
+    switch (iconName) {
+        case 'Home': return Home;
+        case 'Car': return Car;
+        case 'Landmark': return Landmark;
+        case 'PieChart': return PieChart;
+        default: return PieChart;
+    }
+};
 
 export default function NetWorthDashboard() {
-    const [assets, setAssets] = useState<FinancialItem[]>(INITIAL_ASSETS);
-    const [liabilities, setLiabilities] = useState<FinancialItem[]>(INITIAL_LIABILITIES);
+    const assets = useAccountantStore(state => state.assets);
+    const addAsset = useAccountantStore(state => state.addAsset);
+
+    const liabilities = useAccountantStore(state => state.liabilities);
+    const addLiability = useAccountantStore(state => state.addLiability);
+
     const [showModal, setShowModal] = useState(false);
 
     // Form State
@@ -59,9 +55,9 @@ export default function NetWorthDashboard() {
         };
 
         if (newItemType === 'Asset') {
-            setAssets([...assets, newItem]);
+            addAsset(newItem);
         } else {
-            setLiabilities([...liabilities, newItem]);
+            addLiability(newItem);
         }
 
         setShowModal(false);
@@ -127,7 +123,7 @@ export default function NetWorthDashboard() {
                                 <div key={asset.id} className="p-5 flex items-center justify-between hover:bg-neutral-50 transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${asset.color}-50 text-${asset.color}-600`}>
-                                            <asset.icon className="w-5 h-5" />
+                                            {React.createElement(getIconForComponent(asset.icon), { className: "w-5 h-5" })}
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-neutral-900">{asset.name}</h4>
@@ -163,7 +159,7 @@ export default function NetWorthDashboard() {
                                 <div key={liability.id} className="p-5 flex items-center justify-between hover:bg-neutral-50 transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${liability.color}-50 text-${liability.color}-600`}>
-                                            <liability.icon className="w-5 h-5" />
+                                            {React.createElement(getIconForComponent(liability.icon), { className: "w-5 h-5" })}
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-neutral-900">{liability.name}</h4>

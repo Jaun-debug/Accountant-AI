@@ -5,25 +5,13 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, TrendingUp
 
 type EventType = 'income' | 'expense' | 'alert';
 
-interface CalendarEvent {
-    id: number;
-    date: number;
-    title: string;
-    type: EventType;
-    amount: string;
-    nextMonth?: boolean;
-}
-
-const INITIAL_EVENTS: CalendarEvent[] = [
-    { id: 1, date: 15, title: 'Q1 VAT Tax Due', type: 'alert', amount: 'N$4 250,00' },
-    { id: 2, date: 18, title: 'Acme Corp Retainer', type: 'income', amount: '+N$1 500,00' },
-    { id: 3, date: 22, title: 'AWS Cloud Hosting', type: 'expense', amount: '-N$340,00' },
-    { id: 4, date: 28, title: 'Payroll Run', type: 'expense', amount: '-N$12 400,00' },
-    { id: 5, date: 5, title: 'TechFlow Inv #004', type: 'income', amount: '+N$8 200,00', nextMonth: true }
-];
+import { useAccountantStore, CalendarEvent } from '@/store/useAccountantStore';
 
 export default function FinancialCalendar() {
-    const [events, setEvents] = useState<CalendarEvent[]>(INITIAL_EVENTS);
+    const events = useAccountantStore(state => state.calendarEvents);
+    const addCalendarEvent = useAccountantStore(state => state.addCalendarEvent);
+    const deleteCalendarEvent = useAccountantStore(state => state.deleteCalendarEvent);
+
     const [showModal, setShowModal] = useState(false);
 
     // Calendar Navigation State
@@ -56,7 +44,7 @@ export default function FinancialCalendar() {
             amount: newEventType === 'income' ? `+N$${amtStr}` : (newEventType === 'alert' ? `N$${amtStr}` : `-N$${amtStr}`)
         };
 
-        setEvents([...events, newEvent]);
+        addCalendarEvent(newEvent);
         setShowModal(false);
         setNewEventTitle('');
         setNewEventAmount('');
@@ -119,7 +107,7 @@ export default function FinancialCalendar() {
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setEvents(events.filter(ev => ev.id !== event.id));
+                                        deleteCalendarEvent(event.id);
                                     }}
                                     className="opacity-0 group-hover/event:opacity-100 p-1 text-red-500 hover:bg-red-100 rounded transition-all"
                                     title="Delete Event"

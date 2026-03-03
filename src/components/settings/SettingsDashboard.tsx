@@ -3,22 +3,14 @@
 import React, { useState } from 'react';
 import { Globe, RefreshCcw, Zap, Plus, Trash2, CheckCircle2, SlidersHorizontal, CreditCard, Shield, X } from 'lucide-react';
 
-interface AIRule {
-    id: number;
-    description: string;
-    condition: string;
-    action: string;
-}
-
-const INITIAL_RULES: AIRule[] = [
-    { id: 1, description: 'Uber Rides', condition: 'If Vendor contains "Uber"', action: 'Assign to "Travel & Transport"' },
-    { id: 2, description: 'Software Subs', condition: 'If Description contains "Subscription"', action: 'Assign to "Software", Tax 0%' },
-    { id: 3, description: 'Client Windfall', condition: 'If Amount > $10,000', action: 'Flag for "Manual Review"' },
-];
+import { useAccountantStore, AIRule } from '@/store/useAccountantStore';
 
 export default function SettingsDashboard() {
+    const rules = useAccountantStore(state => state.aiRules);
+    const addAIRule = useAccountantStore(state => state.addAIRule);
+    const deleteAIRule = useAccountantStore(state => state.deleteAIRule);
+
     const [activeTab, setActiveTab] = useState<'localization' | 'ai-rules' | 'account'>('localization');
-    const [rules, setRules] = useState<AIRule[]>(INITIAL_RULES);
     const [isSaving, setIsSaving] = useState(false);
 
     // Rule State
@@ -43,7 +35,7 @@ export default function SettingsDashboard() {
             action: newRuleAct
         };
 
-        setRules([newRule, ...rules]);
+        addAIRule(newRule);
         setShowRuleModal(false);
         setNewRuleDesc('');
         setNewRuleCond('');
@@ -51,7 +43,7 @@ export default function SettingsDashboard() {
     };
 
     const handleDeleteRule = (id: number) => {
-        setRules(rules.filter(rule => rule.id !== id));
+        deleteAIRule(id);
     };
 
     return (
@@ -106,7 +98,7 @@ export default function SettingsDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div>
                                             <label className="block text-sm font-bold text-neutral-700 mb-2">Base / Display Currency</label>
-                                            <select className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
+                                            <select title="Base Currency" className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
                                                 <option value="USD">USD ($) - United States Dollar</option>
                                                 <option value="EUR">EUR (€) - Euro</option>
                                                 <option value="GBP">GBP (£) - British Pound</option>
@@ -116,7 +108,7 @@ export default function SettingsDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-bold text-neutral-700 mb-2">Foreign Exchange Rates</label>
-                                            <select className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
+                                            <select title="Exchange Rates" className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
                                                 <option value="live">Live Market Rates (Updated Daily)</option>
                                                 <option value="fixed">Manual Fixed Rates</option>
                                                 <option value="monthly">Monthly Average Rates</option>
@@ -138,7 +130,7 @@ export default function SettingsDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div>
                                             <label className="block text-sm font-bold text-neutral-700 mb-2">Date Format</label>
-                                            <select className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
+                                            <select title="Date Format" className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
                                                 <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                                                 <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                                                 <option value="YYYY-MM-DD">YYYY-MM-DD</option>
@@ -146,7 +138,7 @@ export default function SettingsDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-bold text-neutral-700 mb-2">Number Format</label>
-                                            <select className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
+                                            <select title="Number Format" className="w-full p-4 bg-neutral-50 border-2 border-neutral-100 rounded-xl focus:border-emerald-500 focus:ring-0 outline-none transition-colors font-medium text-neutral-900">
                                                 <option value="us">1,234,567.89</option>
                                                 <option value="eu">1.234.567,89</option>
                                             </select>
@@ -209,20 +201,43 @@ export default function SettingsDashboard() {
                             <div className="bg-white rounded-[2rem] border border-neutral-100 shadow-sm overflow-hidden p-8">
                                 <h2 className="text-2xl font-bold text-neutral-900 mb-6">Subscription & Billing</h2>
 
-                                <div className="flex items-center justify-between p-6 border-2 border-emerald-500 rounded-2xl bg-emerald-50/30 mb-8 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                                    <div className="relative z-10 flex items-center gap-4">
-                                        <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
-                                            <Zap className="w-7 h-7" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-black text-xl text-neutral-900">Premium Plan</h3>
-                                            <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest mt-1">Active until Dec 2026</p>
-                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div className="border-2 border-neutral-100 p-6 rounded-2xl bg-white hover:border-emerald-200 transition-colors">
+                                        <h3 className="font-black text-xl text-neutral-900 mb-1">Starter</h3>
+                                        <p className="text-sm font-bold text-neutral-500 mb-4">Good for sole traders</p>
+                                        <p className="text-3xl font-black text-neutral-900 mb-6">$29<span className="text-sm text-neutral-400 font-medium">/mo</span></p>
+                                        <ul className="space-y-3 mb-6">
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Send 20 invoices</li>
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Enter 5 bills</li>
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Reconcile bank</li>
+                                        </ul>
+                                        <button className="w-full py-2.5 rounded-xl border-2 border-neutral-200 text-sm font-bold text-neutral-600 hover:bg-neutral-50 transition-colors">Select Plan</button>
                                     </div>
-                                    <button className="relative z-10 font-bold text-neutral-600 bg-white border border-neutral-200 px-5 py-2.5 rounded-xl hover:bg-neutral-50 transition-colors shadow-sm">
-                                        Manage Plan
-                                    </button>
+
+                                    <div className="border-2 border-emerald-500 p-6 rounded-2xl bg-emerald-50/20 relative shadow-sm">
+                                        <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] uppercase font-black tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-xl">Current Plan</div>
+                                        <h3 className="font-black text-xl text-emerald-900 mb-1">Standard</h3>
+                                        <p className="text-sm font-bold text-emerald-600 mb-4">Good for growing businesses</p>
+                                        <p className="text-3xl font-black text-neutral-900 mb-6">$46<span className="text-sm text-neutral-400 font-medium">/mo</span></p>
+                                        <ul className="space-y-3 mb-6">
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Send unlimited invoices</li>
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Enter unlimited bills</li>
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Reconcile bank</li>
+                                        </ul>
+                                        <button className="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors">Manage Subscription</button>
+                                    </div>
+
+                                    <div className="border-2 border-neutral-100 p-6 rounded-2xl bg-white hover:border-emerald-200 transition-colors">
+                                        <h3 className="font-black text-xl text-neutral-900 mb-1">Premium</h3>
+                                        <p className="text-sm font-bold text-neutral-500 mb-4">Good for established businesses</p>
+                                        <p className="text-3xl font-black text-neutral-900 mb-6">$62<span className="text-sm text-neutral-400 font-medium">/mo</span></p>
+                                        <ul className="space-y-3 mb-6">
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> All Standard features</li>
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Multiple currencies</li>
+                                            <li className="text-sm font-medium text-neutral-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Analytics & Projections</li>
+                                        </ul>
+                                        <button className="w-full py-2.5 rounded-xl border-2 border-neutral-200 text-sm font-bold text-neutral-600 hover:bg-neutral-50 transition-colors">Upgrade</button>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-6">

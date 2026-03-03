@@ -43,6 +43,39 @@ interface Client {
     credits: ClientFile[];
 }
 
+export interface Expense {
+    id: string;
+    vendor: string;
+    category: string;
+    amount: string;
+    date: string;
+}
+
+export interface CalendarEvent {
+    id: number;
+    date: number;
+    title: string;
+    type: 'income' | 'expense' | 'alert';
+    amount: string;
+    nextMonth?: boolean;
+}
+
+export interface FinancialItem {
+    id: number;
+    name: string;
+    category: string;
+    value: number;
+    icon: any;
+    color: string;
+}
+
+export interface AIRule {
+    id: number;
+    description: string;
+    condition: string;
+    action: string;
+}
+
 interface AccountantStore {
     activeTab: string;
     setActiveTab: (tab: string) => void;
@@ -72,6 +105,26 @@ interface AccountantStore {
     addInvoice: (invoice: Invoice) => void;
     updateInvoiceStatus: (id: string, status: Invoice['status']) => void;
     deleteInvoice: (id: string) => void;
+
+    expenses: Expense[];
+    addExpense: (expense: Expense) => void;
+    deleteExpense: (id: string) => void;
+
+    calendarEvents: CalendarEvent[];
+    addCalendarEvent: (event: CalendarEvent) => void;
+    deleteCalendarEvent: (id: number) => void;
+
+    assets: FinancialItem[];
+    addAsset: (asset: FinancialItem) => void;
+    deleteAsset: (id: number) => void;
+
+    liabilities: FinancialItem[];
+    addLiability: (liability: FinancialItem) => void;
+    deleteLiability: (id: number) => void;
+
+    aiRules: AIRule[];
+    addAIRule: (rule: AIRule) => void;
+    deleteAIRule: (id: number) => void;
 }
 
 export const useAccountantStore = create<AccountantStore>((set) => ({
@@ -119,4 +172,45 @@ export const useAccountantStore = create<AccountantStore>((set) => ({
     deleteInvoice: (id) => set((state) => ({
         invoices: state.invoices.filter(inv => inv.id !== id)
     })),
+
+    expenses: [
+        { id: 'EXP-001', vendor: 'AWS Cloud Services', category: 'Infrastructure', amount: '$340.00', date: 'Feb 22, 2026' },
+        { id: 'EXP-002', vendor: 'Google Workspace', category: 'Software', amount: '$54.00', date: 'Feb 20, 2026' },
+        { id: 'EXP-003', vendor: 'WeWork Office', category: 'Rent', amount: '$1,200.00', date: 'Feb 01, 2026' },
+    ],
+    addExpense: (expense) => set((state) => ({ expenses: [expense, ...state.expenses] })),
+    deleteExpense: (id) => set((state) => ({ expenses: state.expenses.filter(e => e.id !== id) })),
+
+    calendarEvents: [
+        { id: 1, date: 15, title: 'Q1 VAT Tax Due', type: 'alert', amount: 'N$4 250,00' },
+        { id: 2, date: 18, title: 'Acme Corp Retainer', type: 'income', amount: '+N$1 500,00' },
+        { id: 3, date: 22, title: 'AWS Cloud Hosting', type: 'expense', amount: '-N$340,00' },
+        { id: 4, date: 28, title: 'Payroll Run', type: 'expense', amount: '-N$12 400,00' },
+        { id: 5, date: 5, title: 'TechFlow Inv #004', type: 'income', amount: '+N$8 200,00', nextMonth: true }
+    ],
+    addCalendarEvent: (event) => set((state) => ({ calendarEvents: [...state.calendarEvents, event] })),
+    deleteCalendarEvent: (id) => set((state) => ({ calendarEvents: state.calendarEvents.filter(e => e.id !== id) })),
+
+    assets: [
+        { id: 1, name: 'Main Office Building', category: 'Property', value: 450000, icon: 'Home', color: 'blue' },
+        { id: 2, name: 'Company Vehicles (3)', category: 'Vehicle', value: 85000, icon: 'Car', color: 'emerald' },
+        { id: 3, name: 'Business Checking', category: 'Cash', value: 124500, icon: 'Landmark', color: 'purple' },
+    ],
+    addAsset: (asset) => set((state) => ({ assets: [...state.assets, asset] })),
+    deleteAsset: (id) => set((state) => ({ assets: state.assets.filter(a => a.id !== id) })),
+
+    liabilities: [
+        { id: 1, name: 'Office Mortgage', category: 'Loan', value: 280000, icon: 'Home', color: 'red' },
+        { id: 2, name: 'Equipment Lease', category: 'Lease', value: 15400, icon: 'PieChart', color: 'red' },
+    ],
+    addLiability: (liability) => set((state) => ({ liabilities: [...state.liabilities, liability] })),
+    deleteLiability: (id) => set((state) => ({ liabilities: state.liabilities.filter(l => l.id !== id) })),
+
+    aiRules: [
+        { id: 1, description: 'Uber Rides', condition: 'If Vendor contains "Uber"', action: 'Assign to "Travel & Transport"' },
+        { id: 2, description: 'Software Subs', condition: 'If Description contains "Subscription"', action: 'Assign to "Software", Tax 0%' },
+        { id: 3, description: 'Client Windfall', condition: 'If Amount > $10,000', action: 'Flag for "Manual Review"' },
+    ],
+    addAIRule: (rule) => set((state) => ({ aiRules: [rule, ...state.aiRules] })),
+    deleteAIRule: (id) => set((state) => ({ aiRules: state.aiRules.filter(r => r.id !== id) })),
 }));
