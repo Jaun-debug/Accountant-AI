@@ -43,7 +43,7 @@ export default function RootLayout({
             <body className="bg-neutral-50 min-h-screen font-sans font-light">
                 <Sidebar />
                 <main className="lg:pl-64 min-h-screen pt-20 lg:pt-0">
-                    <div className="p-4 md:p-8 max-w-7xl mx-auto page-transition">
+                    <div className="p-4 md:p-8 max-w-[1600px] mx-auto page-transition">
                         {children}
                     </div>
                 </main>

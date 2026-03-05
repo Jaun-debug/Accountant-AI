@@ -171,7 +171,8 @@ export default function AIExtractor() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Left: Input Panel */}
-                <div className="lg:col-span-5 space-y-6">
+                <div className={cn("space-y-6 transition-all duration-500", extractionResults ? "lg:col-span-3" : "lg:col-span-5")}>
+
                     <div className="bg-white p-8 rounded-[32px] border border-neutral-100 shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 blur-3xl opacity-50"></div>
 
@@ -187,10 +188,10 @@ export default function AIExtractor() {
                                     <Upload className={cn("w-8 h-8", file ? "text-emerald-600" : "text-neutral-400")} />
                                 </div>
                                 <p className="text-sm font-bold text-neutral-900">{file ? file.name : "Click to upload statement"}</p>
-                                <p className="text-xs text-neutral-400 font-medium mt-1 uppercase tracking-tight">PDF, JPG, PNG (MAX 20MB)</p>
+                                <p className="text-xs text-neutral-400 font-medium mt-1 uppercase tracking-tight text-center">PDF, JPG, PNG<br />(MAX 20MB)</p>
                                 {file && (
-                                    <div className="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-600 bg-white px-3 py-1.5 rounded-full shadow-sm">
-                                        <CheckCircle className="w-3.5 h-3.5" /> Ready for Analysis
+                                    <div className="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-600 bg-white px-3 py-1.5 rounded-full shadow-sm text-center">
+                                        <CheckCircle className="w-3.5 h-3.5" /> Ready
                                     </div>
                                 )}
                                 <input
@@ -209,7 +210,7 @@ export default function AIExtractor() {
                                         type="text"
                                         value={listName}
                                         onChange={(e) => setListName(e.target.value)}
-                                        placeholder="e.g. Monthly Grocery Expenses"
+                                        placeholder="e.g. Grocery"
                                         className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium outline-none"
                                     />
                                 </div>
@@ -231,13 +232,13 @@ export default function AIExtractor() {
                                         type="text"
                                         value={keywords}
                                         onChange={(e) => setKeywords(e.target.value)}
-                                        placeholder="e.g. SPAR, Total, Utilities"
+                                        placeholder="e.g. SPAR, Utilities"
                                         className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium outline-none"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Balance Policy</label>
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Policy</label>
                                     <div className="flex bg-neutral-100 p-1.5 rounded-2xl gap-1">
                                         {['auto', 'debit', 'credit'].map((t) => (
                                             <button
@@ -270,12 +271,12 @@ export default function AIExtractor() {
                                 {isExtracting ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
-                                        Analyzing...
+                                        Wait...
                                     </>
                                 ) : (
                                     <>
                                         <Zap className="w-5 h-5 fill-current" />
-                                        Process Statement
+                                        Process
                                     </>
                                 )}
                             </button>
@@ -284,32 +285,32 @@ export default function AIExtractor() {
                 </div>
 
                 {/* Right: Results Panel */}
-                <div className="lg:col-span-7 h-full">
-                    <div className="bg-white rounded-[32px] border border-neutral-100 shadow-sm flex flex-col h-[750px] overflow-hidden">
-                        <div className="p-8 border-b border-neutral-100 flex items-center justify-between">
-                            <h3 className="text-xl font-bold text-neutral-900">
+                <div className={cn("h-full transition-all duration-500 w-full min-w-0 max-w-full overflow-hidden", extractionResults ? "lg:col-span-9" : "lg:col-span-7")}>
+                    <div className="bg-white rounded-[32px] border border-neutral-100 shadow-sm flex flex-col h-[750px] w-full min-w-0 overflow-hidden">
+                        <div className="p-8 border-b border-neutral-100 flex items-center justify-between w-full min-w-0">
+                            <h3 className="text-xl font-bold text-neutral-900 truncate pr-4 min-w-0">
                                 {extractionResults?.listName || "Extraction Results"}
                             </h3>
                             {extractionResults && (
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 flex-shrink-0">
                                     <span className={cn(
-                                        "px-4 py-2 text-sm font-black rounded-xl",
+                                        "px-4 py-2 text-sm font-black rounded-xl whitespace-nowrap",
                                         extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0
                                             ? "bg-red-50 text-red-600"
                                             : "bg-emerald-50 text-emerald-600"
                                     )}>
                                         TOTAL: {extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0 ? '-' : ''}N${formatAmount(Math.abs(extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0)))}
                                     </span>
-                                    <span className="bg-neutral-100 text-neutral-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block">
+                                    <span className="bg-neutral-100 text-neutral-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block whitespace-nowrap">
                                         {extractionResults.transactions.length} Transactions
                                     </span>
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-8 space-y-4 bg-neutral-50/30">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 space-y-4 bg-neutral-50/30 w-full min-w-0">
                             {!extractionResults && !isExtracting ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center">
+                                <div className="h-full flex flex-col items-center justify-center text-center w-full">
                                     <div className="w-24 h-24 bg-white rounded-3xl shadow-sm border border-neutral-100 flex items-center justify-center mb-6">
                                         <Search className="w-10 h-10 text-neutral-100" />
                                     </div>
@@ -317,18 +318,18 @@ export default function AIExtractor() {
                                     <p className="text-sm text-neutral-400 max-w-xs mt-2 font-medium">Upload a bank statement and click process to see intelligent transaction mapping.</p>
                                 </div>
                             ) : isExtracting ? (
-                                <div className="space-y-4">
+                                <div className="space-y-4 w-full">
                                     {[1, 2, 3, 4, 5].map((i) => (
-                                        <div key={i} className="h-20 bg-white rounded-2xl border border-neutral-100 animate-pulse"></div>
+                                        <div key={i} className="h-20 bg-white rounded-2xl border border-neutral-100 animate-pulse w-full"></div>
                                     ))}
                                 </div>
                             ) : (
                                 extractionResults?.transactions.map((t, idx) => (
                                     <div key={idx} className={cn(
-                                        "bg-white p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all group hover:shadow-md",
+                                        "bg-white p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all group hover:shadow-md w-full min-w-0 max-w-full",
                                         t.approved ? "border-emerald-200 bg-emerald-50/10" : "border-neutral-100"
                                     )}>
-                                        <div className="flex items-center gap-4 flex-1">
+                                        <div className="flex items-center gap-4 flex-1 min-w-0 w-full">
                                             <button
                                                 onClick={() => toggleApproval(idx)}
                                                 className={cn(
@@ -345,14 +346,14 @@ export default function AIExtractor() {
                                             )}>
                                                 {(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? <Filter className="w-6 h-6 rotate-180" /> : <ArrowRight className="w-6 h-6 -rotate-45" />}
                                             </div>
-                                            <div className="flex-1 min-w-0">
+                                            <div className="flex-1 min-w-0 w-full">
                                                 <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest leading-none mb-1.5">{t.date}</p>
-                                                <p className="text-sm font-bold text-neutral-800 truncate">{t.description}</p>
+                                                <p className="text-sm font-bold text-neutral-800 truncate block w-full" title={t.description}>{t.description}</p>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-6 justify-between sm:justify-end w-full sm:w-auto pl-10 sm:pl-0">
-                                            <div className="relative">
+                                        <div className="flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto sm:flex-shrink-0 pl-10 sm:pl-0 flex-nowrap">
+                                            <div className="relative min-w-[120px] max-w-[180px] flex-shrink-0">
                                                 {isAddingAccount === idx ? (
                                                     <div className="flex items-center gap-2">
                                                         <input
@@ -362,12 +363,12 @@ export default function AIExtractor() {
                                                             onChange={e => setNewAccountName(e.target.value)}
                                                             onKeyDown={e => e.key === 'Enter' && handleAddNewAccount(idx)}
                                                             placeholder="New Account"
-                                                            className="px-3 py-1.5 text-xs font-bold border-2 border-emerald-500 rounded-lg outline-none w-32"
+                                                            className="px-3 py-1.5 text-xs font-bold border-2 border-emerald-500 rounded-lg outline-none w-28"
                                                         />
-                                                        <button onClick={() => handleAddNewAccount(idx)} title="Confirm New Account" className="text-emerald-600 hover:text-emerald-700">
+                                                        <button onClick={() => handleAddNewAccount(idx)} title="Confirm New Account" className="text-emerald-600 hover:text-emerald-700 flex-shrink-0">
                                                             <CheckCircle className="w-4 h-4" />
                                                         </button>
-                                                        <button onClick={() => setIsAddingAccount(null)} title="Cancel New Account" className="text-neutral-400 hover:text-red-500">
+                                                        <button onClick={() => setIsAddingAccount(null)} title="Cancel New Account" className="text-neutral-400 hover:text-red-500 flex-shrink-0">
                                                             <X className="w-4 h-4" />
                                                         </button>
                                                     </div>
@@ -383,7 +384,7 @@ export default function AIExtractor() {
                                                             }
                                                         }}
                                                         className={cn(
-                                                            "px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs font-bold text-neutral-600 outline-none focus:border-emerald-500 cursor-pointer hover:bg-neutral-100 transition-colors",
+                                                            "w-full px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs font-bold text-neutral-600 outline-none focus:border-emerald-500 cursor-pointer hover:bg-neutral-100 transition-colors truncate block",
                                                             t.approved && "opacity-60 cursor-not-allowed"
                                                         )}
                                                         disabled={t.approved}
@@ -397,7 +398,7 @@ export default function AIExtractor() {
                                             </div>
 
                                             <p className={cn(
-                                                "text-lg font-black tabular-nums transition-transform sm:w-28 text-right",
+                                                "text-base md:text-lg font-black tabular-nums transition-transform w-[110px] text-right flex-shrink-0 whitespace-nowrap",
                                                 (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)) < 0 ? "text-red-500" : "text-emerald-600",
                                                 !t.approved && "opacity-50"
                                             )}>
@@ -410,7 +411,7 @@ export default function AIExtractor() {
                         </div>
 
                         {extractionResults && (
-                            <div className="p-8 border-t border-neutral-100 bg-white flex flex-col md:flex-row gap-4">
+                            <div className="p-8 border-t border-neutral-100 bg-white flex flex-col md:flex-row gap-4 w-full">
                                 <button
                                     onClick={handleExportCSV}
                                     className="flex-1 px-6 py-4 border-2 border-neutral-100 text-neutral-600 rounded-2xl font-bold hover:bg-neutral-50 transition-all flex items-center justify-center gap-3"
