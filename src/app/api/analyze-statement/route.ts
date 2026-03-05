@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { OpenAI } from 'openai';
 import pdfParse from 'pdf-parse';
 
+export function repairJSON(content: string) {
+    try {
+        return JSON.parse(content);
+    } catch (e) {
+        console.warn("Attempting JSON repair...", e);
+        // Often it's missing the closing array and object
+        const repaired = content + "\n]\n}";
+        try {
+            return JSON.parse(repaired);
+        } catch (e2) {
+            // Or maybe just the closing object
+            const repaired2 = content + "\n}";
+            try { return JSON.parse(repaired2); } catch (e3) {
+                // If all fails, throw to the outer catch
+                throw new Error("Cannot repair JSON");
+            }
+        }
+    }
+}
+
 export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
@@ -72,11 +92,11 @@ IMPORTANT JSON SYNTAX:
         const makeOpenAICall = async (retries = 3): Promise<any> => {
             try {
                 return await openai.chat.completions.create({
-                    model: "gpt-4o",
+                    model: "gpt-4o-2024-08-06",
                     messages: messages,
                     temperature: 0,
                     response_format: { type: "json_object" },
-                    max_tokens: 4096,
+                    max_tokens: 16300,
                 });
             } catch (err) {
                 if (retries > 0) {
@@ -102,10 +122,18 @@ IMPORTANT JSON SYNTAX:
 
         let parsed;
         try {
-            parsed = JSON.parse(content);
+            parsed = repairJSON(content);
+            if (!parsed.transactions) {
+                // sometimes AI returns nested or different format
+                if (parsed.listName && Array.isArray(parsed.listName)) parsed.transactions = parsed.listName;
+                else parsed.transactions = [];
+            }
         } catch (e) {
-            parsed = { listName: "Error parsing JSON", transactions: [] };
-            console.error(e, content);
+            // Include a chunk of the raw content so we can see EXACTLY what is breaking the parser
+            parsed = {
+                listName: `Error parsing JSON. Raw length: ${content.length}. Ends with: ${content.substring(content.length - 40)}`,
+                transactions: []
+            };
         }
         return NextResponse.json(parsed);
 
