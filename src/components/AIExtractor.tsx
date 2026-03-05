@@ -136,7 +136,13 @@ export default function AIExtractor() {
     const toggleApproval = (index: number) => {
         if (!extractionResults) return;
         const updated = [...extractionResults.transactions];
-        updated[index].approved = !updated[index].approved;
+        const isApproving = !updated[index].approved;
+        updated[index].approved = isApproving;
+
+        if (isApproving && listName) {
+            updated[index].account = listName;
+        }
+
         setExtractionResults({ ...extractionResults, transactions: updated });
     };
 
@@ -205,14 +211,19 @@ export default function AIExtractor() {
 
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">List Context</label>
-                                    <input
-                                        type="text"
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Bulk Category</label>
+                                    <select
+                                        title="Bulk Category Assignment"
+                                        aria-label="Bulk Category Assignment"
                                         value={listName}
                                         onChange={(e) => setListName(e.target.value)}
-                                        placeholder="e.g. Grocery"
-                                        className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium outline-none"
-                                    />
+                                        className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent border-r-[16px] focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-bold text-neutral-700 outline-none cursor-pointer"
+                                    >
+                                        <option value="">-- Mixed / Check Individual --</option>
+                                        {customAccounts.map(acc => (
+                                            <option key={acc} value={acc}>{acc}</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className="space-y-2">
