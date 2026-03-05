@@ -75,6 +75,8 @@ IMPORTANT JSON SYNTAX:
                     model: "gpt-4o",
                     messages: messages,
                     temperature: 0,
+                    response_format: { type: "json_object" },
+                    max_tokens: 4096,
                 });
             } catch (err) {
                 if (retries > 0) {
