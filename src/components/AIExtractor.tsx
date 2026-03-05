@@ -101,6 +101,18 @@ export default function AIExtractor() {
             } catch (err) {
                 console.error("Failed to refresh clients list", err);
             }
+            // Remove the saved transactions from the UI
+            if (extractionResults) {
+                const remainingTransactions = extractionResults.transactions.filter(t => !t.approved);
+                if (remainingTransactions.length === 0) {
+                    setExtractionResults(null); // All done!
+                } else {
+                    setExtractionResults({
+                        ...extractionResults,
+                        transactions: remainingTransactions
+                    });
+                }
+            }
             alert(`Success: ${res.message}`);
         } catch (error) {
             alert("Failed to connect to server.");
@@ -275,16 +287,6 @@ export default function AIExtractor() {
                                     />
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Search Keywords</label>
-                                    <input
-                                        type="text"
-                                        value={keywords}
-                                        onChange={(e) => setKeywords(e.target.value)}
-                                        placeholder="e.g. SPAR, Utilities"
-                                        className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium outline-none"
-                                    />
-                                </div>
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Policy</label>
