@@ -51,7 +51,8 @@ export default function AIExtractor() {
         setExtractionResults(null);
 
         try {
-            const results = await api.analyzeStatement(file, keywords, listName);
+            // Pass an empty string instead of listName so the backend AI doesn't use the selected Target Category to inadvertently filter the extraction
+            const results = await api.analyzeStatement(file, keywords, '');
             // Default xero-style behavior: transactions require approval and have default account
             const moddedResults = {
                 ...results,
@@ -283,6 +284,17 @@ export default function AIExtractor() {
                                         value={clientName}
                                         onChange={(e) => setClientName(e.target.value)}
                                         placeholder="e.g. Acme Corp"
+                                        className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium outline-none"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Search Keywords (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={keywords}
+                                        onChange={(e) => setKeywords(e.target.value)}
+                                        placeholder="e.g. SPAR, Total"
                                         className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium outline-none"
                                     />
                                 </div>
