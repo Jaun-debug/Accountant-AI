@@ -51,8 +51,9 @@ export default function AIExtractor() {
         setExtractionResults(null);
 
         try {
-            // Pass an empty string instead of listName so the backend AI doesn't use the selected Target Category to inadvertently filter the extraction
-            const results = await api.analyzeStatement(file, keywords, '');
+            // Pass empty strings so the backend AI gives us the ENTIRE completely raw list without any filtering. 
+            // We'll filter purely on the client side instantly.
+            const results = await api.analyzeStatement(file, '', '');
             // Default xero-style behavior: transactions require approval and have default account
             const moddedResults = {
                 ...results,
@@ -187,6 +188,14 @@ export default function AIExtractor() {
         setIsAddingAccount(null);
     };
 
+    const filteredTransactions = extractionResults?.transactions.map((t, i) => ({ ...t, originalIndex: i })).filter(t => {
+        if (!keywords) return true;
+        const lowerKey = keywords.toLowerCase();
+        return t.description.toLowerCase().includes(lowerKey) ||
+            t.date.includes(lowerKey) ||
+            (t.account && t.account.toLowerCase().includes(lowerKey));
+    }) || [];
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -289,7 +298,7 @@ export default function AIExtractor() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Search Keywords (Optional)</label>
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Live Filter (Instants)</label>
                                     <input
                                         type="text"
                                         value={keywords}
@@ -358,14 +367,14 @@ export default function AIExtractor() {
                                 <div className="flex items-center gap-4 flex-shrink-0">
                                     <span className={cn(
                                         "px-4 py-2 text-sm font-black rounded-xl whitespace-nowrap",
-                                        extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0
+                                        filteredTransactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0
                                             ? "bg-red-50 text-red-600"
                                             : "bg-emerald-50 text-emerald-600"
                                     )}>
-                                        TOTAL: {extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0 ? '-' : ''}N${formatAmount(Math.abs(extractionResults.transactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0)))}
+                                        TOTAL: {filteredTransactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0) < 0 ? '-' : ''}N${formatAmount(Math.abs(filteredTransactions.reduce((s, t) => s + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any)), 0)))}
                                     </span>
                                     <span className="bg-neutral-100 text-neutral-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block whitespace-nowrap">
-                                        {extractionResults.transactions.length} Transactions
+                                        {filteredTransactions.length} Transactions
                                     </span>
                                 </div>
                             )}
@@ -387,14 +396,14 @@ export default function AIExtractor() {
                                     ))}
                                 </div>
                             ) : (
-                                extractionResults?.transactions.map((t, idx) => (
-                                    <div key={idx} className={cn(
+                                filteredTransactions.map((t) => (
+                                    <div key={t.originalIndex} className={cn(
                                         "bg-white p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all group hover:shadow-md w-full min-w-0 max-w-full",
                                         t.approved ? "border-emerald-200 bg-emerald-50/10" : "border-neutral-100"
                                     )}>
                                         <div className="flex items-center gap-4 flex-1 min-w-0 w-full">
                                             <button
-                                                onClick={() => toggleApproval(idx)}
+                                                onClick={() => toggleApproval(t.originalIndex)}
                                                 className={cn(
                                                     "w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer",
                                                     t.approved ? "bg-emerald-500 border-emerald-500 text-white" : "border-neutral-300 bg-white hover:border-emerald-400"
