@@ -135,8 +135,15 @@ export default function AIExtractor() {
 
     const toggleApproval = (index: number) => {
         if (!extractionResults) return;
+
         const updated = [...extractionResults.transactions];
         const isApproving = !updated[index].approved;
+
+        if (isApproving && !listName) {
+            alert("Please select or setup a target category on the left side first.");
+            return;
+        }
+
         updated[index].approved = isApproving;
 
         if (isApproving && listName) {
@@ -158,7 +165,11 @@ export default function AIExtractor() {
         if (!customAccounts.includes(newAccountName)) {
             setCustomAccounts([...customAccounts, newAccountName]);
         }
-        updateTransactionAccount(index, newAccountName);
+        if (index === -1) {
+            setListName(newAccountName);
+        } else {
+            updateTransactionAccount(index, newAccountName);
+        }
         setNewAccountName('');
         setIsAddingAccount(null);
     };
@@ -211,19 +222,46 @@ export default function AIExtractor() {
 
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Bulk Category</label>
-                                    <select
-                                        title="Bulk Category Assignment"
-                                        aria-label="Bulk Category Assignment"
-                                        value={listName}
-                                        onChange={(e) => setListName(e.target.value)}
-                                        className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent border-r-[16px] focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-bold text-neutral-700 outline-none cursor-pointer"
-                                    >
-                                        <option value="">-- Mixed / Check Individual --</option>
-                                        {customAccounts.map(acc => (
-                                            <option key={acc} value={acc}>{acc}</option>
-                                        ))}
-                                    </select>
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest pl-1">Target Category</label>
+                                    {isAddingAccount === -1 ? (
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                autoFocus
+                                                type="text"
+                                                value={newAccountName}
+                                                onChange={e => setNewAccountName(e.target.value)}
+                                                onKeyDown={e => e.key === 'Enter' && handleAddNewAccount(-1)}
+                                                placeholder="New category..."
+                                                className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-2 border-emerald-500 focus:bg-white transition-all text-sm font-bold text-neutral-700 outline-none"
+                                            />
+                                            <button onClick={() => handleAddNewAccount(-1)} title="Save Category" className="flex-shrink-0 text-emerald-600 hover:text-emerald-700 bg-emerald-50 p-4 rounded-2xl">
+                                                <CheckCircle className="w-5 h-5" />
+                                            </button>
+                                            <button onClick={() => setIsAddingAccount(null)} title="Cancel" className="flex-shrink-0 text-red-500 hover:text-red-600 bg-red-50 p-4 rounded-2xl">
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            title="Target Category"
+                                            aria-label="Target Category"
+                                            value={listName}
+                                            onChange={(e) => {
+                                                if (e.target.value === '__ADD_NEW__') {
+                                                    setIsAddingAccount(-1);
+                                                } else {
+                                                    setListName(e.target.value);
+                                                }
+                                            }}
+                                            className="w-full px-5 py-4 bg-neutral-50 rounded-2xl border-transparent border-r-[16px] focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-bold text-neutral-700 outline-none cursor-pointer"
+                                        >
+                                            <option value="">-- Select a Category --</option>
+                                            {customAccounts.map(acc => (
+                                                <option key={acc} value={acc}>{acc}</option>
+                                            ))}
+                                            <option value="__ADD_NEW__" className="font-bold text-emerald-600">+ Add New Category</option>
+                                        </select>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -364,49 +402,11 @@ export default function AIExtractor() {
                                         </div>
 
                                         <div className="flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto sm:flex-shrink-0 pl-10 sm:pl-0 flex-nowrap">
-                                            <div className="relative min-w-[120px] max-w-[180px] flex-shrink-0">
-                                                {isAddingAccount === idx ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <input
-                                                            autoFocus
-                                                            type="text"
-                                                            value={newAccountName}
-                                                            onChange={e => setNewAccountName(e.target.value)}
-                                                            onKeyDown={e => e.key === 'Enter' && handleAddNewAccount(idx)}
-                                                            placeholder="New Account"
-                                                            className="px-3 py-1.5 text-xs font-bold border-2 border-emerald-500 rounded-lg outline-none w-28"
-                                                        />
-                                                        <button onClick={() => handleAddNewAccount(idx)} title="Confirm New Account" className="text-emerald-600 hover:text-emerald-700 flex-shrink-0">
-                                                            <CheckCircle className="w-4 h-4" />
-                                                        </button>
-                                                        <button onClick={() => setIsAddingAccount(null)} title="Cancel New Account" className="text-neutral-400 hover:text-red-500 flex-shrink-0">
-                                                            <X className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <select
-                                                        title="Assign Account"
-                                                        value={t.account || 'General'}
-                                                        onChange={(e) => {
-                                                            if (e.target.value === '__ADD_NEW__') {
-                                                                setIsAddingAccount(idx);
-                                                            } else {
-                                                                updateTransactionAccount(idx, e.target.value);
-                                                            }
-                                                        }}
-                                                        className={cn(
-                                                            "w-full px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs font-bold text-neutral-600 outline-none focus:border-emerald-500 cursor-pointer hover:bg-neutral-100 transition-colors truncate block",
-                                                            t.approved && "opacity-60 cursor-not-allowed"
-                                                        )}
-                                                        disabled={t.approved}
-                                                    >
-                                                        {customAccounts.map(acc => (
-                                                            <option key={acc} value={acc}>{acc}</option>
-                                                        ))}
-                                                        <option value="__ADD_NEW__" className="font-bold text-emerald-600">+ Add New Account</option>
-                                                    </select>
-                                                )}
-                                            </div>
+                                            {t.approved && t.account && (
+                                                <span className="bg-neutral-100 text-neutral-600 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider truncate max-w-[140px]">
+                                                    {t.account}
+                                                </span>
+                                            )}
 
                                             <p className={cn(
                                                 "text-base md:text-lg font-black tabular-nums transition-transform w-[110px] text-right flex-shrink-0 whitespace-nowrap",
