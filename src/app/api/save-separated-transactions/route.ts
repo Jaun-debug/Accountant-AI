@@ -52,13 +52,13 @@ export async function POST(req: NextRequest) {
 
         const generateCSV = (items: any[]) => {
             if (items.length === 0) return null;
-            const headers = ['Date', 'Description', 'Amount'];
-            const rows = items.map(t => [t.date || '', t.description || '', t.amount || '']);
+            const headers = ['Date', 'Description', 'Category', 'Amount'];
+            const rows = items.map(t => [t.date || '', t.description || '', t.account || 'General', t.amount || '']);
             const total = items.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
             return [
                 headers.join(','),
                 ...rows.map(row => row.map(cell => `"${cell || ''}"`).join(',')),
-                `"","TOTAL","${total.toFixed(2)}"`
+                `"","","TOTAL","${total.toFixed(2)}"`
             ].join('\n');
         };
 
